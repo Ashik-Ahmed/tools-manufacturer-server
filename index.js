@@ -58,6 +58,31 @@ async function run() {
             res.send(result);
         })
 
+        //get an specific user by email
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email }
+
+            const result = await userCollection.findOne(filter);
+            res.send(result);
+        })
+
+        // update an user 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const updatedUser = req.body;
+            const filter = { email: email };
+
+            const updatedDoc = {
+                $set: {
+                    updatedUser,
+                }
+            };
+
+            const result = await userCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
+
         //get all products
         app.get('/tools', async (req, res) => {
             const query = {};
