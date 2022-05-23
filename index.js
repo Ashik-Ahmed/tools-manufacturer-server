@@ -92,7 +92,7 @@ async function run() {
             res.send(tools);
         });
 
-        //get a single product to update
+        //get a single product
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -160,12 +160,12 @@ async function run() {
         })
 
 
-        // find a specific item by id for payment 
-        app.get('/tool/:id', async (req, res) => {
+        // find a specific order by id for payment 
+        app.get('/order/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
 
-            const tool = await toolsCollection.findOne(query);
+            const tool = await orderCollection.findOne(query);
             res.send(tool);
         })
 
@@ -173,7 +173,7 @@ async function run() {
         // payment api
         app.post("/create-payment-intent", async (req, res) => {
             const order = req.body;
-            const price = order.price;
+            const price = order.price * order.quantity;
             const amount = price * 100;
 
             // Create a PaymentIntent with the order amount and currency
