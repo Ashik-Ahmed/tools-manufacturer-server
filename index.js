@@ -117,6 +117,49 @@ async function run() {
             res.send(result)
         });
 
+
+        // get orders by user email... below is with JWT 
+        app.get('/myOrder', async (req, res) => {
+            const email = req.query.email;
+            const query = { customerEmail: email };
+            const cursor = orderCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
+        })
+
+        // get products by user email 
+        // app.get('/my-order', verifyJWT, async (req, res) => {
+
+        //     const authHeader = req.headers.authorization;
+        //     console.log(authHeader);
+
+        //     // const decodedEmail = req.decoded.email;
+        //     const email = req.query.email;
+        //     const decodedEmail = req.decoded.email;
+
+        //     if (email === decodedEmail) {
+        //         const query = { email: email };
+        //         const cursor = orderCollection.find(query);
+        //         const products = await cursor.toArray();
+        //         res.send(products);
+        //     }
+        //     else {
+        //         res.status(403).send({ message: 'Forbidden Access' })
+        //     }
+
+        // })
+
+
+        // delete an order by id 
+        app.delete('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
         // find a specific item by id for payment 
         app.get('/tool/:id', async (req, res) => {
             const id = req.params.id;
