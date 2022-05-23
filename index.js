@@ -91,6 +91,15 @@ async function run() {
             res.send(tools);
         });
 
+        //get a single product to update
+        app.get('/tools/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+
+            const result = await toolsCollection.findOne(query);
+            res.send(result);
+        })
+
         // delete a product by id 
         app.delete('/tool/:id', async (req, res) => {
             const id = req.params.id;
