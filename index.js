@@ -41,6 +41,7 @@ async function run() {
         const toolsCollection = client.db("tool-house").collection("tools");
         const reviewCollection = client.db("tool-house").collection("reviews");
         const userCollection = client.db("tool-house").collection("users");
+        const orderCollection = client.db("tool-house").collection("orders");
 
 
         // add a new user 
@@ -108,6 +109,13 @@ async function run() {
             const result = await toolsCollection.deleteOne(query);
             res.send(result);
         })
+
+        //  add a new order
+        app.post('/confirm-order', async (req, res) => {
+            const newOrder = req.body;
+            const result = await orderCollection.insertOne(newOrder);
+            res.send(result)
+        });
 
         // find a specific item by id for payment 
         app.get('/tool/:id', async (req, res) => {
