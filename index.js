@@ -17,7 +17,6 @@ app.use(express.json());
 
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
-    console.log('AuthHeader: ', authHeader)
     if (!authHeader) {
         return res.status(401).send({ message: 'Unauthorized Access' });
     }
@@ -26,7 +25,6 @@ function verifyJWT(req, res, next) {
         if (err) {
             return res.status(403).send({ message: 'Forbidden Access' });
         }
-        // console.log('Decoded', decoded);
         req.decoded = decoded;
         next();
     })
@@ -61,6 +59,15 @@ async function run() {
             res.send({ result, token });
         })
 
+
+        //get all users
+        app.get('/users', verifyJWT, async (req, res) => {
+            const query = {};
+            const cursor = userCollection.find(query);
+            const users = await cursor.toArray();
+            res.send(users);
+        });
+
         //get an specific user by email
         app.get('/user/:email', async (req, res) => {
             const email = req.params.email;
@@ -74,6 +81,7 @@ async function run() {
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const updatedUser = req.body;
+            console.log(updatedUser)
             const filter = { email: email };
 
             const updatedDoc = {
@@ -95,7 +103,7 @@ async function run() {
         });
 
         //get a single product
-        app.get('/tools/:id', async (req, res) => {
+        app.get('/tools/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
 
@@ -133,18 +141,13 @@ async function run() {
         app.get('/myOrder', verifyJWT, async (req, res) => {
 
             const authHeader = req.headers.authorization;
-            // console.log(authHeader);
-
-            // const decodedEmail = req.decoded.email;
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
-            // console.log('email:', email, 'decoded: ', decodedEmail)
 
             if (email === decodedEmail) {
                 const query = { customerEmail: email };
                 const cursor = orderCollection.find(query);
                 const orders = await cursor.toArray();
-                console.log(orders)
                 return res.send(orders);
             }
             else {
@@ -165,7 +168,7 @@ async function run() {
 
 
         // find a specific order by id for payment 
-        app.get('/order/:id', async (req, res) => {
+        app.get('/order/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
 
