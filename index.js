@@ -81,7 +81,6 @@ async function run() {
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const updatedUser = req.body;
-            console.log(updatedUser)
             const filter = { email: email };
 
             const updatedDoc = {
@@ -108,6 +107,23 @@ async function run() {
             const query = { _id: ObjectId(id) };
 
             const result = await toolsCollection.findOne(query);
+            res.send(result);
+        })
+
+        // update a product by id 
+        app.put('/tool/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedProduct = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    quantity: updatedProduct.quantity,
+                }
+            };
+
+            console.log(filter, updatedDoc)
+
+            const result = await toolsCollection.updateOne(filter, updatedDoc);
             res.send(result);
         })
 
@@ -211,9 +227,6 @@ async function run() {
             const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
             res.send(updatedDoc);
         })
-
-
-
 
         // add a new review 
         app.post('/addReview', async (req, res) => {
