@@ -17,6 +17,7 @@ app.use(express.json());
 
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
+    console.log('AuthHeader: ', authHeader)
     if (!authHeader) {
         return res.status(401).send({ message: 'Unauthorized Access' });
     }
@@ -25,7 +26,7 @@ function verifyJWT(req, res, next) {
         if (err) {
             return res.status(403).send({ message: 'Forbidden Access' });
         }
-        console.log('Decoded', decoded);
+        // console.log('Decoded', decoded);
         req.decoded = decoded;
         next();
     })
@@ -56,7 +57,8 @@ async function run() {
             };
 
             const result = await userCollection.updateOne(filter, updatedDoc, options);
-            res.send(result);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+            res.send({ result, token });
         })
 
         //get an specific user by email
@@ -119,35 +121,37 @@ async function run() {
 
 
         // get orders by user email... below is with JWT 
-        app.get('/myOrder', async (req, res) => {
-            const email = req.query.email;
-            const query = { customerEmail: email };
-            const cursor = orderCollection.find(query);
-            const products = await cursor.toArray();
-            res.send(products);
-        })
-
-        // get products by user email 
-        // app.get('/my-order', verifyJWT, async (req, res) => {
-
-        //     const authHeader = req.headers.authorization;
-        //     console.log(authHeader);
-
-        //     // const decodedEmail = req.decoded.email;
+        // app.get('/myOrder', async (req, res) => {
         //     const email = req.query.email;
-        //     const decodedEmail = req.decoded.email;
-
-        //     if (email === decodedEmail) {
-        //         const query = { email: email };
-        //         const cursor = orderCollection.find(query);
-        //         const products = await cursor.toArray();
-        //         res.send(products);
-        //     }
-        //     else {
-        //         res.status(403).send({ message: 'Forbidden Access' })
-        //     }
-
+        //     const query = { customerEmail: email };
+        //     const cursor = orderCollection.find(query);
+        //     const products = await cursor.toArray();
+        //     res.send(products);
         // })
+
+        // get orders by user email 
+        app.get('/myOrder', verifyJWT, async (req, res) => {
+
+            const authHeader = req.headers.authorization;
+            // console.log(authHeader);
+
+            // const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+            // console.log('email:', email, 'decoded: ', decodedEmail)
+
+            if (email === decodedEmail) {
+                const query = { customerEmail: email };
+                const cursor = orderCollection.find(query);
+                const orders = await cursor.toArray();
+                console.log(orders)
+                return res.send(orders);
+            }
+            else {
+                return res.status(403).send({ message: 'Forbidden Access' })
+            }
+
+        })
 
 
         // delete an order by id 
@@ -173,7 +177,7 @@ async function run() {
         // payment api
         app.post("/create-payment-intent", async (req, res) => {
             const order = req.body;
-            const price = order.price * order.quantity;
+            const price = parseInt(order.price) * parseInt(order.quantity);
             const amount = price * 100;
 
             // Create a PaymentIntent with the order amount and currency
@@ -201,7 +205,7 @@ async function run() {
                 }
             }
 
-            const updatedOrder = await toolsCollection.updateOne(filter, updatedDoc);
+            const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
             res.send(updatedDoc);
         })
 
