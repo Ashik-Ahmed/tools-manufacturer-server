@@ -55,7 +55,7 @@ async function run() {
             };
 
             const result = await userCollection.updateOne(filter, updatedDoc, options);
-            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10d' })
             res.send({ result, token });
         })
 
@@ -93,8 +93,17 @@ async function run() {
             res.send(result);
         })
 
+
+        // add a new product 
+        app.post('/add-product', async (req, res) => {
+            const newProduct = req.body;
+            const result = await toolsCollection.insertOne(newProduct);
+            res.send(result)
+        })
+
+
         //get all products
-        app.get('/tools', async (req, res) => {
+        app.get('/tools', verifyJWT, async (req, res) => {
             const query = {};
             const cursor = toolsCollection.find(query);
             const tools = await cursor.toArray();
@@ -120,8 +129,6 @@ async function run() {
                     quantity: updatedProduct.quantity,
                 }
             };
-
-            console.log(filter, updatedDoc)
 
             const result = await toolsCollection.updateOne(filter, updatedDoc);
             res.send(result);
@@ -172,6 +179,13 @@ async function run() {
 
         })
 
+        // get all orders 
+        app.get('/manage-orders', async (req, res) => {
+            const query = {};
+            const orders = await orderCollection.find(query).toArray();
+            return res.send((orders));
+        })
+
 
         // delete an order by id 
         app.delete('/order/:id', async (req, res) => {
@@ -184,7 +198,7 @@ async function run() {
 
 
         // find a specific order by id for payment 
-        app.get('/order/:id', verifyJWT, async (req, res) => {
+        app.get('/order/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
 
@@ -196,7 +210,8 @@ async function run() {
         // payment api
         app.post("/create-payment-intent", async (req, res) => {
             const order = req.body;
-            const price = parseInt(order.price) * parseInt(order.quantity);
+            // const price = parseInt(order.price) * parseInt(order.quantity);
+            const price = parseInt(order.quantity) * parseInt(order.price);
             const amount = price * 100;
 
             // Create a PaymentIntent with the order amount and currency
