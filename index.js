@@ -226,9 +226,7 @@ async function run() {
         // payment api
         app.post("/create-payment-intent", async (req, res) => {
             const order = req.body;
-            // const price = parseInt(order.price) * parseInt(order.quantity);
-            const price = parseInt(order.quantity) * parseInt(order.price);
-            const amount = price * 100;
+            const amount = parseInt(order.quantity * order.price * 100);
 
             // Create a PaymentIntent with the order amount and currency
             const paymentIntent = await stripe.paymentIntents.create({
@@ -240,6 +238,7 @@ async function run() {
             res.send({
                 clientSecret: paymentIntent.client_secret,
             });
+
         });
 
         // update paid status 
@@ -289,5 +288,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log("CRUD server is running on console");
+    console.log("Server is running on console");
 })
