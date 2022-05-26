@@ -103,7 +103,7 @@ async function run() {
 
 
         //get all products
-        app.get('/tools', verifyJWT, async (req, res) => {
+        app.get('/tools', async (req, res) => {
             const query = {};
             const cursor = toolsCollection.find(query);
             const tools = await cursor.toArray();
@@ -187,6 +187,22 @@ async function run() {
         })
 
 
+        // update an order by id 
+        app.put('/update-order/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedOrder = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    status: updatedOrder.shipment,
+                }
+            };
+            console.log(id, updatedDoc);
+            const result = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
+
+
         // delete an order by id 
         app.delete('/order/:id', async (req, res) => {
             const id = req.params.id;
@@ -249,6 +265,13 @@ async function run() {
             const result = await reviewCollection.insertOne(newReview);
             res.send(result)
         });
+
+        // get all reviews 
+        app.get('/reviews', async (req, res) => {
+            const query = {};
+            const reviews = await reviewCollection.find(query).toArray();
+            res.send(reviews);
+        })
 
 
     }

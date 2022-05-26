@@ -6,14 +6,14 @@ This project is live at this link [Live site](https://tool-house-3896b.web.app/d
 
 In the project you will find below features:
 
-###Admin:
+### Admin:
 * Add Product
 * Update Product
 * Delete Product
 * Manage Users (Delete, Update)
 * Manage Orders (Delete, Change shippment status)
 
-###Regular User:
+### Regular User:
 * Buy Product
 * Make Payment
 * Cancel Order
